@@ -1,15 +1,15 @@
 [
   {
-    "content": "P0: GEVI Search-Funktionalität reparieren",
+    "content": "P0: GEVI Search-Funktionalität reparieren (Search deaktiviert - muss manuell per ID scrapen)",
     "status": "completed"
   },
   {
-    "content": "P0: AEBN Search-Funktionalität reparieren",
-    "status": "completed"
+    "content": "P0: AEBN Search-Funktionalität debuggen und reparieren",
+    "status": "in_progress"
   },
   {
     "content": "P1: GayDVDEmpire aspxerrorpath redirect Problem beheben",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "Alle Fixes testen mit testing_agent_v3",
