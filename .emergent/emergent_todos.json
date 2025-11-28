@@ -1,10 +1,10 @@
 [
   {
-    "content": "CRITICAL: Playwright ARM64 Kompatibilitätsproblem - PLAYWRIGHT_BROWSERS_PATH gesetzt",
+    "content": "Alle Scraper erneut testen",
     "status": "completed"
   },
   {
-    "content": "Alle Scraper erneut testen",
-    "status": "in_progress"
+    "content": "Frontend Search Tab UI aktualisieren",
+    "status": "completed"
   }
 ]
