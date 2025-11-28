@@ -697,6 +697,7 @@ function App() {
                     <SelectContent>
                       <SelectItem value="gaydvdempire">Gay DVD Empire</SelectItem>
                       <SelectItem value="aebn">AEBN</SelectItem>
+                      <SelectItem value="radvideo">RadVideo</SelectItem>
                       <SelectItem value="gevi" disabled>GEVI (Search Disabled - Use Scrape by ID)</SelectItem>
                     </SelectContent>
                   </Select>
