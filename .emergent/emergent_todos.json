@@ -1,26 +1,10 @@
 [
   {
-    "content": "CRITICAL: Playwright ARM64 Kompatibilitätsproblem - alle Scraper auf requests+BeautifulSoup umstellen",
+    "content": "CRITICAL: Playwright ARM64 Kompatibilitätsproblem - PLAYWRIGHT_BROWSERS_PATH gesetzt",
+    "status": "completed"
+  },
+  {
+    "content": "Alle Scraper erneut testen",
     "status": "in_progress"
-  },
-  {
-    "content": "GayDVDEmpire Scraper auf requests umstellen",
-    "status": "pending"
-  },
-  {
-    "content": "AEBN Scraper auf requests umstellen",
-    "status": "pending"
-  },
-  {
-    "content": "GEVI Scraper auf requests umstellen",
-    "status": "pending"
-  },
-  {
-    "content": "RadVideo Scraper auf requests umstellen",
-    "status": "pending"
-  },
-  {
-    "content": "Alle Fixes testen",
-    "status": "pending"
   }
 ]
