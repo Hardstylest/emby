@@ -1,18 +1,26 @@
 [
   {
-    "content": "P0: GEVI Search-Funktionalität reparieren (Search deaktiviert - muss manuell per ID scrapen)",
-    "status": "completed"
-  },
-  {
-    "content": "P0: AEBN Search-Funktionalität debuggen und reparieren",
-    "status": "completed"
-  },
-  {
-    "content": "P1: GayDVDEmpire aspxerrorpath redirect Problem beheben",
-    "status": "completed"
-  },
-  {
-    "content": "Alle Fixes testen mit testing_agent_v3",
+    "content": "CRITICAL: Playwright ARM64 Kompatibilitätsproblem - alle Scraper auf requests+BeautifulSoup umstellen",
     "status": "in_progress"
+  },
+  {
+    "content": "GayDVDEmpire Scraper auf requests umstellen",
+    "status": "pending"
+  },
+  {
+    "content": "AEBN Scraper auf requests umstellen",
+    "status": "pending"
+  },
+  {
+    "content": "GEVI Scraper auf requests umstellen",
+    "status": "pending"
+  },
+  {
+    "content": "RadVideo Scraper auf requests umstellen",
+    "status": "pending"
+  },
+  {
+    "content": "Alle Fixes testen",
+    "status": "pending"
   }
 ]
