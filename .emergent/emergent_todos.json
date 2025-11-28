@@ -1,0 +1,18 @@
+[
+  {
+    "content": "P0: GEVI Search-Funktionalität reparieren",
+    "status": "pending"
+  },
+  {
+    "content": "P0: AEBN Search-Funktionalität reparieren",
+    "status": "pending"
+  },
+  {
+    "content": "P1: GayDVDEmpire aspxerrorpath redirect Problem beheben",
+    "status": "pending"
+  },
+  {
+    "content": "Alle Fixes testen mit testing_agent_v3",
+    "status": "pending"
+  }
+]
