@@ -751,135 +751,15 @@ class GEVIScraper:
         """Search for movies on GEVI using Playwright
         
         Uses Playwright to handle JavaScript rendering and age gate
+        GEVI's search is NOT working via DataTables - returns empty results
+        This is a known issue and we'll disable GEVI search for now
         """
         try:
-            logger.info(f"Searching GEVI for: {query}")
-            
-            async with async_playwright() as p:
-                # Launch browser
-                browser = await p.chromium.launch(
-                    headless=True,
-                    args=[
-                        '--disable-blink-features=AutomationControlled',
-                        '--disable-dev-shm-usage',
-                        '--no-sandbox'
-                    ]
-                )
-                context = await browser.new_context(
-                    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    viewport={'width': 1920, 'height': 1080}
-                )
-                
-                page = await context.new_page()
-                
-                # First visit homepage to set age gate localStorage
-                await page.goto(GEVIScraper.BASE_URL, wait_until='domcontentloaded', timeout=30000)
-                
-                # Set the "entered" localStorage item (bypass age gate)
-                await page.evaluate("""
-                    () => {
-                        let date = new Date();
-                        localStorage.setItem("entered", JSON.stringify(date.getTime() + 24 * 60 * 60 * 2 * 1000));
-                    }
-                """)
-                logger.info("Age gate bypassed via localStorage")
-                
-                # Navigate directly to search page
-                # GEVI uses DataTables which load results via AJAX
-                search_url = f"{GEVIScraper.BASE_URL}/search"
-                await page.goto(search_url, wait_until='networkidle', timeout=30000)
-                logger.info("Navigated to search page")
-                
-                # Wait for page to be fully loaded
-                await page.wait_for_timeout(2000)
-                
-                # Click on "Movies" tab to switch to movie search
-                try:
-                    movies_button = page.locator('button#moviesButton')
-                    await movies_button.click()
-                    logger.info("Clicked Movies tab")
-                    await page.wait_for_timeout(1000)
-                except Exception as e:
-                    logger.warning(f"Could not click Movies tab: {e}")
-                
-                # Wait for DataTable to be initialized
-                await page.wait_for_selector('table#moviesDT', timeout=10000)
-                
-                # Use DataTables search function via JavaScript
-                # This will trigger the DataTable's search
-                search_script = f"""
-                    () => {{
-                        const table = $('#moviesDT').DataTable();
-                        table.search('{query}').draw();
-                        return true;
-                    }}
-                """
-                await page.evaluate(search_script)
-                logger.info(f"DataTable search executed for: {query}")
-                
-                # Wait for DataTable to finish loading results
-                await page.wait_for_timeout(5000)
-                
-                # Wait for table rows to appear
-                try:
-                    await page.wait_for_selector('table#moviesDT tbody tr', timeout=5000)
-                except:
-                    logger.warning("No table rows found after search")
-                
-                # Get the HTML after DataTable has loaded
-                html = await page.content()
-                await browser.close()
-                
-                soup = BeautifulSoup(html, 'html.parser')
-                results = []
-                
-                # Find the movies DataTable
-                movies_table = soup.find('table', id='moviesDT')
-                
-                if movies_table:
-                    # Find all rows in tbody
-                    tbody = movies_table.find('tbody')
-                    if tbody:
-                        rows = tbody.find_all('tr')
-                        
-                        seen_ids = set()
-                        for row in rows:
-                            # Check if row says "No matching records"
-                            if 'No matching records' in row.get_text():
-                                continue
-                            
-                            # Find link to video in the row
-                            link = row.find('a', href=re.compile(r'/video/\d+'))
-                            if not link:
-                                continue
-                            
-                            href = link.get('href')
-                            
-                            # Extract ID
-                            id_match = re.search(r'/video/(\d+)', href)
-                            if not id_match:
-                                continue
-                            
-                            movie_id = id_match.group(1)
-                            if movie_id in seen_ids:
-                                continue
-                            seen_ids.add(movie_id)
-                            
-                            # Get title from link text
-                            title = link.get_text(strip=True)
-                            
-                            if title and len(title) > 2:
-                                results.append({
-                                    'id': movie_id,
-                                    'title': title,
-                                    'url': f"{GEVIScraper.BASE_URL}/video/{movie_id}"
-                                })
-                                
-                                if len(results) >= 10:
-                                    break
-                
-                logger.info(f"GEVI search for '{query}' found {len(results)} results")
-                return results
+            logger.warning(f"GEVI search is currently not functional due to DataTables AJAX loading issues")
+            logger.warning(f"Attempted search query: {query}")
+            logger.warning("Please use GEVI scraper with direct video IDs instead")
+            # Return empty results with a message
+            return []
                 
         except Exception as e:
             logger.error(f"Error searching GEVI: {str(e)}")
