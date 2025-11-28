@@ -5,7 +5,7 @@
   },
   {
     "content": "P0: AEBN Search-Funktionalität debuggen und reparieren",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "P1: GayDVDEmpire aspxerrorpath redirect Problem beheben",
@@ -13,6 +13,6 @@
   },
   {
     "content": "Alle Fixes testen mit testing_agent_v3",
-    "status": "pending"
+    "status": "in_progress"
   }
 ]
