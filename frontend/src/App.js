@@ -684,7 +684,7 @@ function App() {
               <CardHeader>
                 <CardTitle className="text-white">Search Movies</CardTitle>
                 <CardDescription className="text-gray-300">
-                  Search for movies on GEVI (other sources coming soon)
+                  Search for movies across multiple sources. GEVI search is disabled - please scrape by ID directly.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -695,9 +695,9 @@ function App() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gevi">GEVI (Search Available)</SelectItem>
-                      <SelectItem value="gaydvdempire" disabled>Gay DVD Empire (Coming Soon)</SelectItem>
-                      <SelectItem value="aebn" disabled>AEBN (Coming Soon)</SelectItem>
+                      <SelectItem value="gaydvdempire">Gay DVD Empire</SelectItem>
+                      <SelectItem value="aebn">AEBN</SelectItem>
+                      <SelectItem value="gevi" disabled>GEVI (Search Disabled - Use Scrape by ID)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
