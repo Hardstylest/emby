@@ -446,36 +446,62 @@ class AEBNScraper:
     
     @staticmethod
     async def search_movie(query: str) -> List[Dict[str, Any]]:
-        """Search for movies on AEBN"""
+        """Search for movies on AEBN with proper age gate bypass"""
         try:
             logger.info(f"Searching AEBN for: {query}")
             
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
-                context = await browser.new_context(
-                    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=[
+                        '--disable-blink-features=AutomationControlled',
+                        '--disable-dev-shm-usage',
+                        '--no-sandbox'
+                    ]
                 )
-                
-                # Set age gate cookie
-                await context.add_cookies([{
-                    'name': 'AVS_COOKIE',
-                    'value': 'yes',
-                    'domain': '.aebn.com',
-                    'path': '/'
-                }])
+                context = await browser.new_context(
+                    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    viewport={'width': 1920, 'height': 1080}
+                )
                 
                 page = await context.new_page()
                 
-                # Navigate to search page
-                search_url = f"https://gay.aebn.com/gay/search"
+                # First visit homepage to bypass age gate
+                logger.info("Visiting AEBN homepage to bypass age gate...")
+                await page.goto("https://gay.aebn.com/gay/movies", wait_until='domcontentloaded', timeout=30000)
+                
+                # Check if we're on the age gate page
+                if 'age-gate' in await page.content() or '/avs/gate' in page.url:
+                    logger.info("Age gate detected, bypassing...")
+                    
+                    try:
+                        # Click the "Enter" button
+                        enter_button = page.locator('a.button.enter').first
+                        if await enter_button.count() > 0:
+                            await enter_button.click()
+                            await page.wait_for_load_state('networkidle', timeout=20000)
+                            logger.info(f"Age gate bypassed, now at: {page.url}")
+                    except Exception as e:
+                        logger.warning(f"Error clicking age gate button: {e}")
+                
+                # Now navigate to search with the query
+                search_url = f"https://gay.aebn.com/gay/search?criteria={query.replace(' ', '+')}&type=movie"
+                logger.info(f"Navigating to search URL: {search_url}")
                 await page.goto(search_url, wait_until='domcontentloaded', timeout=30000)
                 
-                # Fill search form
-                await page.fill('input[name="criteria"]', query)
-                await page.select_option('select[name="type"]', 'movie')
-                await page.click('button[type="submit"], input[type="submit"]')
+                # Wait for results to load
+                await page.wait_for_timeout(4000)
                 
-                await page.wait_for_timeout(3000)
+                # Check if we hit age gate again
+                if 'age-gate' in await page.content():
+                    logger.warning("Still on age gate, attempting bypass again...")
+                    try:
+                        enter_button = page.locator('a.button.enter').first
+                        if await enter_button.count() > 0:
+                            await enter_button.click()
+                            await page.wait_for_load_state('networkidle', timeout=20000)
+                    except:
+                        pass
                 
                 html = await page.content()
                 await browser.close()
@@ -483,38 +509,51 @@ class AEBNScraper:
                 soup = BeautifulSoup(html, 'html.parser')
                 results = []
                 
-                # Find movie links
-                for link in soup.find_all('a', href=re.compile(r'/gay/movies/\d+')):
-                    result = {}
+                # Find movie links in search results
+                # AEBN uses different selectors - look for movie cards/tiles
+                movie_links = soup.find_all('a', href=re.compile(r'/gay/movies/\d+'))
+                
+                seen_ids = set()
+                for link in movie_links:
+                    href = link.get('href', '')
                     
-                    # Get title from link text or nearby element
+                    # Extract ID from URL
+                    id_match = re.search(r'/movies/(\d+)', href)
+                    if not id_match:
+                        continue
+                    
+                    movie_id = id_match.group(1)
+                    if movie_id in seen_ids:
+                        continue
+                    seen_ids.add(movie_id)
+                    
+                    # Get title from link text or nearby elements
                     title = link.get_text(strip=True)
-                    if not title:
-                        # Try parent or sibling elements
-                        parent = link.find_parent('div', class_='title') or link.find_parent('h3')
-                        if parent:
-                            title = parent.get_text(strip=True)
                     
-                    if title:
-                        result['title'] = title
+                    # If no title in link, check parent containers
+                    if not title or len(title) < 3:
+                        parent = link.find_parent('div', class_=re.compile(r'title|movie|card'))
+                        if parent:
+                            title_elem = parent.find(['h2', 'h3', 'h4', 'span'], class_=re.compile(r'title|name'))
+                            if title_elem:
+                                title = title_elem.get_text(strip=True)
+                    
+                    # Only add if we have a valid title
+                    if title and len(title) > 2:
+                        results.append({
+                            'id': movie_id,
+                            'title': title,
+                            'url': f"https://gay.aebn.com{href}" if not href.startswith('http') else href
+                        })
                         
-                        # Extract ID from URL
-                        href = link.get('href')
-                        id_match = re.search(r'/movies/(\d+)', href)
-                        if id_match:
-                            result['id'] = id_match.group(1)
-                            result['url'] = f"https://gay.aebn.com{href}" if not href.startswith('http') else href
-                            
-                            results.append(result)
-                            
-                            if len(results) >= 10:
-                                break
+                        if len(results) >= 10:
+                            break
                 
                 logger.info(f"AEBN search found {len(results)} results")
                 return results
                 
         except Exception as e:
-            logger.error(f"Error searching AEBN: {str(e)}")
+            logger.error(f"Error searching AEBN: {str(e)}", exc_info=True)
             return []
 
     
