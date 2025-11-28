@@ -282,6 +282,13 @@ class GayDVDEmpireScraper:
                 response = await page.goto(url, wait_until='domcontentloaded', timeout=30000)
                 await page.wait_for_timeout(500 + int(__import__('random').random() * 500))
                 
+                # Check for error page (aspxerrorpath)
+                current_url = page.url
+                if 'aspxerrorpath' in current_url.lower() or 'error' in current_url.lower():
+                    logger.error(f"Error page detected: {current_url}")
+                    await browser.close()
+                    raise HTTPException(status_code=404, detail=f"Movie ID {movie_id} not found or invalid (redirected to error page)")
+                
                 # Check if we're on the age confirmation page
                 if 'AgeConfirmation' in page.url:
                     logger.info("Age gate detected, accepting...")
@@ -299,11 +306,20 @@ class GayDVDEmpireScraper:
                         await page.goto(url, wait_until='load', timeout=40000)
                         logger.info(f"Second navigation completed: {page.url}")
                         
+                        # Check again for error page after age gate
+                        current_url = page.url
+                        if 'aspxerrorpath' in current_url.lower() or 'error' in current_url.lower():
+                            logger.error(f"Error page detected after age gate: {current_url}")
+                            await browser.close()
+                            raise HTTPException(status_code=404, detail=f"Movie ID {movie_id} not found or invalid")
+                        
                         # Check if we're still on age gate (shouldn't be)
                         if 'AgeConfirmation' in page.url:
                             logger.error("Still on age gate after bypass attempt")
                             await browser.close()
                             raise HTTPException(status_code=500, detail="Age gate bypass failed - still on confirmation page")
+                    except HTTPException:
+                        raise
                     except Exception as e:
                         logger.error(f"Failed to bypass age gate: {str(e)}")
                         await browser.close()
